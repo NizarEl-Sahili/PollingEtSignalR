@@ -13,7 +13,7 @@ import { lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-polling',
   standalone: true,
-  imports: [MatCheckbox,MatCardContent,MatCard,MatFormField,FormsModule,MatLabel,CommonModule,MatInput,MatButtonModule],
+  imports: [MatCheckbox, MatCardContent, MatCard, MatFormField, FormsModule, MatLabel, CommonModule, MatInput, MatButtonModule],
   templateUrl: './polling.component.html',
   styleUrls: ['./polling.component.css']
 })
@@ -21,23 +21,27 @@ export class PollingComponent implements OnInit {
   apiUrl = "https://localhost:7289/api/";
   title = 'labo.signalr.ng';
   tasks: UselessTask[] = [];
-  taskname: string = "";
+  taskText: string = "";
 
-  constructor(private http:HttpClient){}
+  constructor(private http: HttpClient) { }
 
   ngOnInit(): void {
     this.updateTasks();
   }
 
-  complete(id: number) {
+  async complete(id: number) {
     // TODO On invoke la méthode pour compléter une tâche sur le serveur (Contrôleur d'API)
-    
+    let x = await lastValueFrom(this.http.get<number>(this.apiUrl + "UselessTasks/Complete/" + id))
+    console.log(x)
   }
 
-  addtask() {
+  async addtask() {
     // TODO On invoke la méthode pour ajouter une tâche sur le serveur (Contrôleur d'API)
+    let x = await lastValueFrom(this.http.post<UselessTask>(this.apiUrl + "UselessTasks/Add?taskText=" + this.taskText, null))
+    console.log(x)
+    this.tasks.push(x);
 
-    
+
 
     console.log(this.tasks);
   }
@@ -45,6 +49,7 @@ export class PollingComponent implements OnInit {
   async updateTasks() {
     // TODO: Faire une première implémentation simple avec un appel au serveur pour obtenir la liste des tâches
     // TODO: UNE FOIS QUE VOUS AVEZ TESTER AVEC DEUX CLIENTS: Utiliser le polling pour mettre la liste de tasks à jour chaque seconde
-    
+    this.tasks = await lastValueFrom(this.http.get<UselessTask[]>(this.apiUrl + "UselessTasks/GetAll"))
+    setTimeout(() => { this.updateTasks() }, 500)
   }
 }
